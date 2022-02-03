@@ -4,3 +4,4 @@
 ## [목차]
 
 - [시스템 구성 정보 확인하기](documents/system_information.md)
+- [top 을 통해 살펴보는 프로세스 정보들](documents/top.md)
