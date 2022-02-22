@@ -8,3 +8,4 @@
 - [Load Average 와 시스템 부하](documents/load_average.md)
 - [free 명령이 숨기고 있는 것들](documents/free.md)
 - [swap, 메모리 증설의 포인트](documents/swap.md)
+- [NUMA, 메모리 관리의 새로운 세계](documents/numa.md)
