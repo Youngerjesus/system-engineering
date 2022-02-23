@@ -14,3 +14,5 @@
 - [swap, 메모리 증설의 포인트](documents/swap.md)
 
 - [NUMA, 메모리 관리의 새로운 세계](documents/numa.md)
+
+- [TIME_WAIT 소켓이 서비스에 미치는 영향](documents/time_wait.md)
