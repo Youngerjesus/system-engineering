@@ -20,3 +20,5 @@
 - [TCP Keepalive 를 이용한 세션 유지](documents/keepalive.md)
 
 - [TCP 재전송과 타임아웃](documents/tcp_retry_and_timeout.md)
+
+- [dirty page 가 I/O 에 미치는 영향](documents/dirty_page.md)
