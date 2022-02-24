@@ -18,3 +18,5 @@
 - [TIME_WAIT 소켓이 서비스에 미치는 영향](documents/time_wait.md)
 
 - [TCP Keepalive 를 이용한 세션 유지](documents/keepalive.md)
+
+- [TCP 재전송과 타임아웃](documents/tcp_retry_and_timeout.md)
