@@ -25,7 +25,7 @@ Proto Recv-Q Send-Q Local Address           Foreign Address         State       
 tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
 tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      -                    off (0.00/0/0)
 tcp        0      0 192.168.111.182:22      61.177.173.12:27908     SYN_RECV    -                    on (2.15/5/0)
-tcp        0    404 192.168.111.182:22      223.62.174.78:34873     ESTABLISHED -                    on (0.08/0/0)
+tcp        0    404 192.168.111.182:22      223.62.174.78:34873     ESTABLISHED -                    keepalive (70.54/0)
 tcp        0      0 192.168.111.182:36638   52.78.32.75:80          TIME_WAIT   -                    timewait (37.96/0/0)
 tcp6       0      0 :::22                   :::*                    LISTEN      -                    off (0.00/0/0)
 udp        0      0 127.0.0.53:53           0.0.0.0:*                           -                    off (0.00/0/0)
