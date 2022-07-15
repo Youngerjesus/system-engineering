@@ -24,3 +24,5 @@
 - [dirty page 가 I/O 에 미치는 영향](documents/dirty_page.md)
 
 - [I/O 작업이 지나가는 관문, I/O 스케줄러](documents/io_scheduler.md)
+
+- [vmstat 보는법](documents/vmstat.md)
