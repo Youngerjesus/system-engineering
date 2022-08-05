@@ -18,9 +18,9 @@ Page Cache 의 내용과 디스크에 있는 내용이 서로 달라지게 될 �
 
 쓰기 작업이 일어날 때 바로 디스크에 반영하지 않고 Page cache 에서만 반영을 한다. 그렇기 때문에 현재 상태에서 전원이 나가게 되면 쓰기 작업은 반영되지 않을 수 있다. 하지만 그렇다고 해서 매번 디스크에 쓰기를 하면 상당량의 I/O 때문에 성능 저하가 발생할 수도 있다.
 
-그래서 커널은 몇 가지 조건을 만들어서 해당 조건을 만족시키면 dirty page 를 디스크에 동기화 시킨다. 이 기능을 page writeback 이라고 부른다. (dirty page 동기화라고도 부른다.)
+그래서 커널은 몇 가지 조건을 만들어서 해당 조건을 만족시키면 dirty page 를 디스크에 동기화 시킨다. 이 기능을 `page writeback` 이라고 부른다. (dirty page 동기화라고도 부른다.)
 
-커널 버전에 따라서 다르겠지만 flush 라는 단어가 들어간 커널 스레드 (pdflush, flush, bdflush) 가 이 작업을 진행한다.
+커널 버전에 따라서 다르겠지만 flush 라는 단어가 들어간 커널 스레드 `(pdflush, flush, bdflush)` 가 이 작업을 진행한다.
 
 I/O 가 많이 발생하는 서버에서는 dirty page 를 언제 동기화 시키는지가 중요한 성능 튜닝의 요소가 될 수 있다. 그리고 커널에서는 서버의 워크로드에 가장 적합한 동기화 전략을 구사할 수 있도록 파라미터로 조절할 수 있는 인터페이스를 제공해준다. 이를 하나씩 살펴보자.
 
@@ -37,36 +37,68 @@ vm.dirty_writeback_centisecs = 500
 vm.dirty_expire_centisecs = 3000
 ```
 
-먼저 살펴볼 파라미터는 vm.dirty_background_ratio 이다. dirty_page 의 내용을 백그라운드로 동기화 할 때 그 기준이 되는 비율을 의미한다. 전체 메모리 양에 해당 파라미터에 설정되어 있는 비율을 곱해서 나온 기준 값보다 dirty page 가 커지면 그 때 dirty page 의 동기화를 시작한다. 예로 이 값이 10 이고 16GB 메모리를 쓰고 있다면 dirty page 가 1.6GB 보다 커지는 순간에 동기화를 시작한다.
+먼저 살펴볼 파라미터는 `vm.dirty_background_ratio` 이다. dirty_page 의 내용을 백그라운드로 동기화 할 때 그 기준이 되는 비율을 의미한다. 
 
-두 번째는 vm.dirty_background_bytes 이다. ratio 는 전체 메모리 대비 비율을 지정한다면 bytes 는 절대적인 bytes 값을 지정한다. 만약 이 값이 65535 라면 dirty page 가 65535 bytes 가 되었을 때 동기화를 시작한다.
+- 전체 메모리 양에 해당 파라미터에 설정되어 있는 비율을 곱해서 나온 기준 값보다 dirty page 가 커지면 그때 dirty page 의 동기화를 시작한다. 예로 이 값이 10 이고 16GB 메모리를 쓰고 있다면 dirty page 가 1.6GB 보다 커지는 순간에 동기화를 시작한다.
 
-세 번째는 vm.dirty_ratio 이다. vm.background_ratio 와 비슷하게 전체 메모리를 기준으로 dirty page 비율을 산정한다. 다만 차이점이 있는데 예로 바로보자. 이 값이 10 이고 전체 메모리가 16GB 라면 프로세스가 I/O 작업을 하던 중 dirty page 가 1.6 GB 가 되는 순간 해당 프로세스의 I/O 작업을 모두 멈추고 dirty page 동기화를 시작하게 된다. 즉 hard limit 이라고 보면 된다.
+두 번째는 `vm.dirty_background_bytes` 이다. ratio 는 전체 메모리 대비 비율을 지정한다면 bytes 는 절대적인 bytes 값을 지정한다.
 
-네 번째는 vm.dirty_bytes 이다. vm.dirty_ratio 와 같은 방식을 이용하지만 절대적인 bytes 를 기준으로 동작한다.
+- 만약 이 값이 65535 라면 dirty page 가 65535 bytes 가 되었을 때 동기화를 시작한다.
 
-다섯 번째는 vm.dirty_writeback_centisecs 이다. 이 값은 flush 커널 스레드를 몇 초 간격으로 꺠울 것인지를 결정한다. 단위는 1/100 (초) 이므로 5 초로 설정하고 싶다면 500 값을 주면 된다. 500 을 주면 5 초에 한 번 flush 커널 스레드가 꺠어나서 동기화를 시작한다.
+세 번째는 `vm.dirty_ratio 이다.` `vm.background_ratio` 와 비슷하게 전체 메모리를 기준으로 dirty page 비율을 산정한다. 다만 차이점이 있는데 예로 바로보자. 
 
-마지막은 vm.dirty_expire_centisecs 이다. 이 값도 flush 커널 스레드의 동작에 영향을 미친다. vm.dirty_writeback_centisecs 로 인해서 깨어날 flush 스레드가 동기화 할 페이지를 찾을 때 이 값을 사용하는데 이 값도 단위는 1/100 (초) 이다. 즉 3000 으로 설정되어 있다면 30 초동안 디스크로 동기화 되지 않은 페이지들을 디스크에 동기화 시킨다.
+- 이 값이 10 이고 전체 메모리가 16GB 라면 프로세스가 I/O 작업을 하던 중 dirty page 가 1.6 GB 가 되는 순간 해당 프로세스의 I/O 작업을 모두 멈추고 dirty page 동기화를 시작하게 된다. 즉 `hard limit` 이라고 보면 된다.
+
+네 번째는 `vm.dirty_bytes` 이다. `vm.dirty_ratio 와 같은 방식을 이용하지만 절대적인 bytes 를 기준으로 동작한다.
+
+다섯 번째는 `vm.dirty_writeback_centisecs` 이다. 이 값은 flush 커널 스레드를 몇 초 간격으로 꺠울 것인지를 결정한다. 
+
+- 단위는 1/100 (초) 이므로 5 초로 설정하고 싶다면 500 값을 주면 된다. 500 을 주면 5 초에 한 번 flush 커널 스레드가 꺠어나서 동기화를 시작한다.
+
+마지막은 `vm.dirty_expire_centisecs` 이다. 이 값도 flush 커널 스레드의 동작에 영향을 미친다. `vm.dirty_writeback_centisecs` 로 인해서 깨어날 flush 스레드가 동기화 할 페이지를 찾을 때 이 값을 사용하는데 이 값도 단위는 1/100 (초) 이다. 
+
+- 즉 3000 으로 설정되어 있다면 30 초동안 디스크로 동기화 되지 않은 페이지들을 디스크에 동기화 시킨다.
 
 ## 백그라운드 동기화
 
 dirty page 동기화는 백그라운드 동기화와 주기적인 동기화 그리고 명시적인 동기화 세 가지로 구분이 가능하다.
 
-백그라운드 동기화는 vm.dirty_background_ratio 와 vm.dirty_ratio 를 통해서 조절이 가능하다.
+백그라운드 동기화는 `vm.dirty_background_ratio` 와 `vm.dirty_ratio` 를 통해서 조절이 가능하다.
 
-사실 vm.dirty_ratio 로 인해서 발생하는 동기화는 백그라운드 동기화는 아니지만 (그냥 동기화) 백그라운드에서 감시하고 있다가 동기화를 하니까 백그라운드 동기화라고 표현했다.
+사실 `vm.dirty_ratio` 를 넘어서 발생하는 동기화는 백그라운드 동기화는 아니지만 (그냥 동기화 임.) 백그라운드에서 감시하고 있다가 동기화를 하니까 백그라운드 동기화라고 표현했다.
 
-두 번째로 주기적인 동기화는 동기화 작업이 주기적으로 진행되는 것을 말한다. 커널 파라미터에서 vm.dirty_writeback_centisec, vm.dirty_expire_centisecs 를 통해서 조절이 가능하다.
+두 번째로 주기적인 동기화는 동기화 작업이 주기적으로 진행되는 것을 말한다. 커널 파라미터에서 `vm.dirty_writeback_centisec`, `vm.dirty_expire_centisecs` 를 통해서 조절이 가능하다.
 
 마지막으로 명시적인 동기화는 명령어를 통해 명시적으로 동기화가 되는 걸 말한다. sync, fsync 등의 명령어를 이용하면 현재 생성되어 있는 dirty page 를 명시적으로 디스크에 쓴다.
 
-커널의 동작을 추적하기 위해서는 ftrace 를 이용하면 된다.
+여기서는 백그라운드 동기화와 주기적인 동기화를 살펴볼 것. 
+
+커널의 동작을 추적하기 위해서는 ftrace 를 이용하면 된다. (ftrace 는 커널 동작을 추적하기 위해서 사용한다.)
+
+ftrace 설정하기 
 
 - ``mount -t debugfs debugfs /sys/kernel/debug``
 - ``echo function > ./current_tracer``
 
+설정 후에 cat 명령을 통해서 커널 함수가 잘 찍히는지 확인한다. 
+
+trace_pipe 파일을 통해서 커널 함수 호출 확인하기 
+
+```
+$ cat -v ./trace_pipe
+```
+
 dirty page 의 변화를 보고 싶다면 ``/proc/meminfo | grep -i dirty`` 를 스크립트로 만들어서 보자.
+
+커널 파라미터 값 조절하기 (주기적인 동기화를 보고 싶지 않다면.)
+
+```
+$ sysctl -w vm.dirty_writeback_centisecs=0
+$ sysctl -w v.dirty_background_ratio=1
+```
+
+여기서는 테스트 할 때 C 로 파일을 만들어서 작업을 하네. (초당 1MB 의 쓰기 작업을 함으로써.)
+
 
 ## 요약
 
