@@ -26,3 +26,5 @@
 - [I/O 작업이 지나가는 관문, I/O 스케줄러](documents/io_scheduler.md)
 
 - [vmstat 보는법](documents/vmstat.md)
+
+- [파일 입출력](documents/파일%20입출력.md)
